@@ -1,22 +1,37 @@
-//gonna use for loop for now, looking for a substitution, found some but they look complicated
-const FetchPokemon = () => {
+const pokedex = document.getElementById("pokedex");
+
+const fetchPokemon = () => {
+  const promises = [];
   for (let i = 1; i <= 150; i++) {
-    const url = "https://pokeapi.co/api/v2/pokemon/${i}";
-    fetch(url)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        console.log(data);
-        const pokemon = {
-          name: data.name,
-          id: data.id,
-          Image: data.sprites["front_default"],
-          type: data.types.map((type) => type.type.name).join(", "),
-        };
-        console.log(pokemon);
-      });
+    const url = `https://pokeapi.co/api/v2/pokemon/${i}`;
+    promises.push(fetch(url).then((res) => res.json()));
   }
+  Promise.all(promises).then((results) => {
+    const pokemon = results.map((result) => ({
+      name: result.name,
+      image: result.sprites["front_shiny"],
+      type: result.types.map((type) => type.type.name).join(", "),
+      id: result.id,
+    }));
+    displayPokemon(pokemon);
+  });
 };
-//stuff above retrieves certain stuff from api data base that I want
-FetchPokemon();
+//stuff above retrieves certain stuff from api data base that I want(name, pokemon number in pokedex,)
+
+const displayPokemon = (pokemon) => {
+  console.log(pokemon);
+  const pokemonHTMLString = pokemon
+    .map(
+      (pokeman) => `
+        <li class="card">
+            <img class="card-image" src="${pokeman.image}"/>
+            <h2 class="card-title">${pokeman.id}. ${pokeman.name}</h2>
+            <p class="card-subtitle">Type: ${pokeman.type}</p>
+        </li>
+    `
+    )
+    .join("");
+  pokedex.innerHTML = pokemonHTMLString;
+};
+
+fetchPokemon();
